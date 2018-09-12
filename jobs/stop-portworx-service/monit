@@ -1,0 +1,5 @@
+check process stop-portworx-service
+  with pidfile /var/vcap/sys/run/stop-portworx-service/pid
+  start program "/var/vcap/jobs/stop-portworx-service/bin/stop-px-and-unmount start" with timeout 120 seconds
+  stop program "/var/vcap/jobs/stop-portworx-service/bin/stop-px-and-unmount stop" with timeout 180 seconds
+  group vcap

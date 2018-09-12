@@ -1,1 +1,5 @@
-name: px-cleanup
+name: portworx-stop
+blobstore:
+  provider: local
+  options:
+    blobstore_path: /tmp/portworx-stop-blobs

@@ -1,0 +1,9 @@
+releases:
+- name: portworx-stop
+  version: 1.0.1
+
+addons:
+- name: portworx-stop
+  jobs:
+  - name: stop-portworx-service
+    release: portworx-stop

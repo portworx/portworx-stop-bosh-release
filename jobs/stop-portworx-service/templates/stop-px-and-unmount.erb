@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+JOB_NAME=stop-portworx-service
+RUN_DIR=/var/vcap/sys/run/$JOB_NAME
+LOG_DIR=/var/vcap/sys/log/$JOB_NAME
+PIDFILE=${RUN_DIR}/pid
+
+function log
+{
+    m_time=`date "+%F %T"`
+    echo $m_time" "$1
+}
+
+{
+case $1 in
+
+  start)
+    mkdir -p $RUN_DIR $LOG_DIR
+    chown -R vcap:vcap $RUN_DIR $LOG_DIR
+    echo $$ > $PIDFILE
+    while true; do sleep 60;done
+    ;;
+
+  stop)
+    if [ -x /bin/systemctl ]; then
+      # If Portworx service is active, stop it
+      sudo systemctl is-active --quiet portworx && sudo systemctl stop portworx || \
+	    log "Portworx service not active."
+    else
+      log "systemd not installed. Skipping stopping Portworx service."
+    fi
+
+    grep -q '/opt/pwx/oci /var/vcap/store/opt/pwx/oci' /proc/self/mountinfo && \
+      log "Unmounting /var/vcap/store/opt/pwx/oci..." && sudo umount /var/vcap/store/opt/pwx/oci
+
+    kill -9 `cat $PIDFILE`
+    rm -f $PIDFILE
+    ;;
+
+  *)
+    log "Usage: stop-px-and-unmount {start|stop}" ;;
+esac
+} >>  $LOG_DIR/$JOB_NAME.stdout.log 2>>$LOG_DIR/$JOB_NAME.stderr.log

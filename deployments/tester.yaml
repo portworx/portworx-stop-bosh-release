@@ -1,0 +1,30 @@
+name: test-portworx-stop
+
+stemcells:
+- alias: default
+  os: ubuntu-trusty
+  version: latest
+
+releases:
+- name: portworx-stop
+  version: latest
+
+instance_groups:
+- name: portworx-stop
+  azs: [az-1]
+  instances: 1
+  vm_type: small
+  stemcell: default
+  update:
+    serial: true
+    max_in_flight: 1
+  networks: [{name: pks-services}]
+  jobs:
+  - name: stop-portworx-service
+    release: portworx-stop
+
+update:
+  canaries: 0
+  max_in_flight: 1
+  canary_watch_time: 1000-60000
+  update_watch_time: 1000-60000
