@@ -38,6 +38,6 @@ To update a director runtime config: `bosh update-runtime-config runtime-configs
 ## References
 
 * [Create a release](https://bosh.io/docs/cli-v2/#release-creation)
-* [Bosh CLI] (https://bosh.io/docs/cli-v2/)
+* [Bosh CLI](https://bosh.io/docs/cli-v2/)
 * [Portworx documentation](https://docs.portworx.com/scheduler/kubernetes/)
 

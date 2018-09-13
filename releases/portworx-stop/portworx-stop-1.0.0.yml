@@ -1,6 +1,6 @@
 name: portworx-stop
-version: 1.0.1
-commit_hash: a08c70a
+version: 1.0.0
+commit_hash: e95ce4b
 uncommitted_changes: false
 jobs:
 - name: stop-portworx-service
