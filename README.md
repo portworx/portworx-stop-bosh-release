@@ -17,7 +17,7 @@ bosh create-release --force
 
 For final releases,
 ```
-bosh create-release --final --version=<give-your-version-here>
+bosh create-release --final --version=1.0.0
 ```
 
 Upload the created release to the bosh director.
