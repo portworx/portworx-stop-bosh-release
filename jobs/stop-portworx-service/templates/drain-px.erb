@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+JOB_NAME=stop-portworx-service
+RUN_DIR=/var/vcap/sys/run/$JOB_NAME
+LOG_DIR=/var/vcap/sys/log/$JOB_NAME
+PIDFILE=${RUN_DIR}/pid
+
+function log
+{
+    m_time=`date "+%F %T"`
+    echo $m_time" "$1
+}
+
+{
+if [ -x /bin/systemctl ]; then
+    # If Portworx service is active, invoke drain for volume attachments
+    sudo systemctl is-active --quiet portworx
+    if [ $? -eq 0 ]; then
+        /usr/bin/pxctl service node drain-attachments submit --node LocalNode -i bosh-monit -y -w
+        if [ $? -eq 0 ]; then
+            log "Successfully drained all volumes from this node,"
+        else
+            log "Failed to drain all volumes from this node"
+        fi
+    else
+        log "Portworx service not active."
+    fi
+else
+    log "systemd not installed. Skipping drain of volume attachments."
+fi
+} >>  $LOG_DIR/$JOB_NAME.drain.stdout.log 2>>$LOG_DIR/$JOB_NAME.drain.stderr.log

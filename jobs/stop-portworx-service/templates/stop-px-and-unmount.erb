@@ -23,19 +23,9 @@ case $1 in
 
   stop)
     if [ -x /bin/systemctl ]; then
-        # If Portworx service is active, stop it
-        sudo systemctl is-active --quiet portworx
-        if [ $? -eq 0 ]; then
-            /usr/bin/pxctl service node drain-attachments submit --node LocalNode -i bosh-monit -y -w
-            if [ $? -eq 0 ]; then
-                log "Successfully drained all volumes from this node,"
-            else
-                log "Failed to drain all volumes from this node"
-            fi
-            sudo systemctl stop portworx
-        else
+      # If Portworx service is active, stop it
+      sudo systemctl is-active --quiet portworx && sudo systemctl stop portworx || \
 	    log "Portworx service not active."
-        fi
     else
       log "systemd not installed. Skipping stopping Portworx service."
     fi
