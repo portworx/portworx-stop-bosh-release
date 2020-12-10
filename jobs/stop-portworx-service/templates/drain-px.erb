@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+
+JOB_NAME=stop-portworx-service
+RUN_DIR=/var/vcap/sys/run/$JOB_NAME
+LOG_DIR=/var/vcap/sys/log/$JOB_NAME
+PIDFILE=${RUN_DIR}/pid
+
+trap ensure_safe_exit EXIT
+
+function log
+{
+    m_time=`date "+%F %T"`
+    echo $m_time" "$1
+}
+
+ensure_safe_exit() {
+    exit_code=$?
+    if [[ $exit_code -ne 0 ]]; then
+        echo "Portworx drain failed"
+        exit $exit_code
+    fi
+    echo 0 >&3
+}
+
+save_stdout_to_fd3() {
+    exec 3>&1
+}
+
+send_process_stdout_to_logfile() {
+    save_stdout_to_fd3
+    exec 1>> "$LOG_DIR/drain.stdout.log"
+}
+
+send_process_stderr_to_logfile() {
+    exec 2>> "$LOG_DIR/drain.stderr.log"
+}
+
+portworx_drain() {
+if [ -x /bin/systemctl ]; then
+    # If Portworx service is active, invoke drain for volume attachments
+    sudo systemctl is-active --quiet portworx
+    if [ $? -eq 0 ]; then
+        /usr/bin/pxctl service node drain-attachments submit --node LocalNode -i bosh-monit -y -w
+        if [ $? -eq 0 ]; then
+            log "Successfully drained all volumes from this node,"
+        else
+            log "Failed to drain all volumes from this node"
+        fi
+    else
+        log "Portworx service not active."
+    fi
+else
+    log "systemd not installed. Skipping drain of volume attachments."
+fi
+}
+
+main() {
+    send_process_stdout_to_logfile
+    send_process_stderr_to_logfile
+
+    portworx_drain
+    # Always succeed portworx node drain - We don't want to block bosh node drain operation
+    return 0
+}
+
+main
