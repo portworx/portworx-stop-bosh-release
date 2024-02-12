@@ -3,7 +3,7 @@ name: stop-portworx-service
 
 templates:
   stop-px-and-unmount.erb: bin/stop-px-and-unmount
-  drain-px.erb: bin/drain
+  drain-px.erb: bin/pre-stop
 
 packages: []
 
