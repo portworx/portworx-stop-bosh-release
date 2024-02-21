@@ -28,22 +28,43 @@ save_stdout_to_fd3() {
 
 send_process_stdout_to_logfile() {
     save_stdout_to_fd3
-    exec 1>> "$LOG_DIR/drain.stdout.log"
+    exec 1>> "$LOG_DIR/pre-stop.stdout.log"
 }
 
 send_process_stderr_to_logfile() {
-    exec 2>> "$LOG_DIR/drain.stderr.log"
+    exec 2>> "$LOG_DIR/pre-stop.stderr.log"
+}
+
+host_detach_v4_volumes() {
+    myip=$(pxctl status| grep This| awk '{print $1}')
+    log "My IP: $myip"
+    volsToDetach=$(pxctl v l| grep -w v4| grep $myip| awk '{print $1}')
+    log "Volumes to detach: $volsToDetach"
+    for vol in $volsToDetach
+    do
+        log "Detaching $vol"
+        pxctl host detach $vol
+        if [ $? -eq 0 ]; then
+            log "Successfully detached $vol"
+        else
+            log "Failed to detach $vol"
+        fi
+    done
 }
 
 portworx_drain() {
+log "Attempting portworx drain"
 if [ -x /bin/systemctl ]; then
     # If Portworx service is active, invoke drain for volume attachments
+    log "Portworx service is active"
     sudo systemctl is-active --quiet portworx
     if [ $? -eq 0 ]; then
+        log "Draining attachments.."
         /usr/bin/pxctl service node drain-attachments submit --node LocalNode -i bosh-monit -y -w
         if [ $? -eq 0 ]; then
             log "Successfully drained all volumes from this node,"
         else
+            host_detach_v4_volumes
             log "Failed to drain all volumes from this node"
         fi
     else
