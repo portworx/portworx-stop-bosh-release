@@ -1,5 +1,5 @@
 if [ -z "$BOSH_DEPLOYMENT" ]; then
-    echo "Error: Environment variable XYZ is not set." >&2
+    echo "Error: Please set env variable BOSH_DEPLOYMENT to the name of the deployment where Portworx's worker nodes are" >&2
     exit 1
 fi
 
